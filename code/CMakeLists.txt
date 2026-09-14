@@ -88,8 +88,8 @@ set_target_properties(OpenTS PROPERTIES
 message(STATUS "${PROJECT_NAME}: Applying compiler flags...")
 
 # clang-cl deliberately uses the MSVC command-line frontend, so it shares the supported
-# build's /flag spelling.  MinGW uses GCC spelling instead; feeding /Zi, /EHsc, /MT, etc.
-# to g++ makes GCC interpret those tokens as linker input filenames during compilation.
+# build's /flag spelling.  MinGW uses GNU spelling instead; feeding /Zi, /EHsc, /MT, etc.
+# to a GNU frontend makes those tokens look like input filenames during compilation.
 if(MSVC OR
    (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND
     CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC"))
@@ -127,16 +127,22 @@ if(MSVC OR
         >
     )
 elseif(MINGW)
-    # Experimental GNU/MinGW equivalent.  SSE2 is explicit to preserve the floating-point
-    # baseline used by the supported build.  Do not enable fast-math: engine simulation and
+    # Experimental GNU/MinGW equivalent. SSE2 is explicit to preserve the floating-point
+    # baseline used by the supported build. Do not enable fast-math: engine simulation and
     # VQALib must retain normal IEEE semantics.
+    #
+    # OpenTS still contains Microsoft property syntax. Clang's GNU/MinGW frontend supports
+    # __declspec(property) with -fms-extensions, while GCC does not. The temporary _MSC_VER
+    # define is scoped to the OpenTS target only so the existing property declarations that
+    # are intentionally hidden from GCC remain visible to Clang without forcing third-party
+    # libraries onto MSVC-specific source paths.
     set(OPENTS_COMPILE_OPTIONS
         $<$<CONFIG:Debug>:
-            $<$<COMPILE_LANGUAGE:CXX>:-g -O0 -fno-omit-frame-pointer -msse2 -fno-fast-math -finput-charset=UTF-8 -fexec-charset=UTF-8>
+            $<$<COMPILE_LANGUAGE:CXX>:-g -O0 -fno-omit-frame-pointer -msse2 -fno-fast-math -finput-charset=UTF-8 -fexec-charset=UTF-8 $<$<CXX_COMPILER_ID:Clang>:-fms-extensions -D_MSC_VER=1930>>
             $<$<COMPILE_LANGUAGE:C>:-g -O0 -fno-omit-frame-pointer -msse2 -fno-fast-math -finput-charset=UTF-8 -fexec-charset=UTF-8>
         >
         $<$<CONFIG:Release>:
-            $<$<COMPILE_LANGUAGE:CXX>:-g -O2 -msse2 -fno-fast-math -finput-charset=UTF-8 -fexec-charset=UTF-8>
+            $<$<COMPILE_LANGUAGE:CXX>:-g -O2 -msse2 -fno-fast-math -finput-charset=UTF-8 -fexec-charset=UTF-8 $<$<CXX_COMPILER_ID:Clang>:-fms-extensions -D_MSC_VER=1930>>
             $<$<COMPILE_LANGUAGE:C>:-g -O2 -msse2 -fno-fast-math -finput-charset=UTF-8 -fexec-charset=UTF-8>
         >
     )
