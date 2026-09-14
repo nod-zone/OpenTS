@@ -87,42 +87,60 @@ set_target_properties(OpenTS PROPERTIES
 #
 message(STATUS "${PROJECT_NAME}: Applying compiler flags...")
 
-set(OPENTS_COMPILE_OPTIONS
+# clang-cl deliberately uses the MSVC command-line frontend, so it shares the supported
+# build's /flag spelling.  MinGW uses GCC spelling instead; feeding /Zi, /EHsc, /MT, etc.
+# to g++ makes GCC interpret those tokens as linker input filenames during compilation.
+if(MSVC OR
+   (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND
+    CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC"))
+    set(OPENTS_COMPILE_OPTIONS
 
-    # ================= DEBUG =================
-    $<$<CONFIG:Debug>:
+        # ================= DEBUG =================
+        $<$<CONFIG:Debug>:
 
-        # ---------- C++ ----------
-        # /arch:SSE2 -- IEEE-754 single precision, no x87 excess precision.
-        # /fp:precise -- no reassociation of the engine's accumulations.
-        # /utf-8 -- sources and literals are UTF-8 whatever the build machine's code page.
-        $<$<COMPILE_LANGUAGE:CXX>:
-            /Zi /Od /RTC1 /GR $<$<CXX_COMPILER_ID:MSVC>:/MP> /EHsc /Oy- /MTd /Zc:__cplusplus /arch:SSE2 /fp:precise /utf-8
+            # ---------- C++ ----------
+            # /arch:SSE2 -- IEEE-754 single precision, no x87 excess precision.
+            # /fp:precise -- no reassociation of the engine's accumulations.
+            # /utf-8 -- sources and literals are UTF-8 whatever the build machine's code page.
+            $<$<COMPILE_LANGUAGE:CXX>:
+                /Zi /Od /RTC1 /GR $<$<CXX_COMPILER_ID:MSVC>:/MP> /EHsc /Oy- /MTd /Zc:__cplusplus /arch:SSE2 /fp:precise /utf-8
+            >
+
+            # ---------- C ----------
+            $<$<COMPILE_LANGUAGE:C>:
+                /Zi /Od /RTC1 $<$<C_COMPILER_ID:MSVC>:/MP> /Oy- /arch:SSE2 /fp:precise /utf-8
+            >
         >
 
-        # ---------- C ----------
-        $<$<COMPILE_LANGUAGE:C>:
-            /Zi /Od /RTC1 $<$<C_COMPILER_ID:MSVC>:/MP> /Oy- /arch:SSE2 /fp:precise /utf-8
-        >
-    >
+        # ================= RELEASE =================
+        $<$<CONFIG:Release>:
 
-    # ================= RELEASE =================
-    $<$<CONFIG:Release>:
+            # ---------- C++ ----------
+            $<$<COMPILE_LANGUAGE:CXX>:
+                /Zi /O2 /GF /GR $<$<CXX_COMPILER_ID:MSVC>:/MP> /EHsc /MT /Zc:__cplusplus /arch:SSE2 /fp:precise /utf-8
+            >
 
-        # ---------- C++ ----------
-        # /arch:SSE2 -- IEEE-754 single precision, no x87 excess precision.
-        # /fp:precise -- no reassociation of the engine's accumulations.
-        # /utf-8 -- sources and literals are UTF-8 whatever the build machine's code page.
-        $<$<COMPILE_LANGUAGE:CXX>:
-            /Zi /O2 /GF /GR $<$<CXX_COMPILER_ID:MSVC>:/MP> /EHsc /MT /Zc:__cplusplus /arch:SSE2 /fp:precise /utf-8
+            # ---------- C ----------
+            $<$<COMPILE_LANGUAGE:C>:
+                /Zi /O2 /GF $<$<C_COMPILER_ID:MSVC>:/MP> /arch:SSE2 /fp:precise /utf-8
+            >
         >
-
-        # ---------- C ----------
-        $<$<COMPILE_LANGUAGE:C>:
-            /Zi /O2 /GF $<$<C_COMPILER_ID:MSVC>:/MP> /arch:SSE2 /fp:precise /utf-8
+    )
+elseif(MINGW)
+    # Experimental GNU/MinGW equivalent.  SSE2 is explicit to preserve the floating-point
+    # baseline used by the supported build.  Do not enable fast-math: engine simulation and
+    # VQALib must retain normal IEEE semantics.
+    set(OPENTS_COMPILE_OPTIONS
+        $<$<CONFIG:Debug>:
+            $<$<COMPILE_LANGUAGE:CXX>:-g -O0 -fno-omit-frame-pointer -msse2 -fno-fast-math -finput-charset=UTF-8 -fexec-charset=UTF-8>
+            $<$<COMPILE_LANGUAGE:C>:-g -O0 -fno-omit-frame-pointer -msse2 -fno-fast-math -finput-charset=UTF-8 -fexec-charset=UTF-8>
         >
-    >
-)
+        $<$<CONFIG:Release>:
+            $<$<COMPILE_LANGUAGE:CXX>:-g -O2 -msse2 -fno-fast-math -finput-charset=UTF-8 -fexec-charset=UTF-8>
+            $<$<COMPILE_LANGUAGE:C>:-g -O2 -msse2 -fno-fast-math -finput-charset=UTF-8 -fexec-charset=UTF-8>
+        >
+    )
+endif()
 
 target_compile_options(OpenTS PRIVATE ${OPENTS_COMPILE_OPTIONS})
 
@@ -152,10 +170,19 @@ set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/bgfxbackend.cpp" PROPER
         "${BGFX_ROOT}/include;${CMAKE_SOURCE_DIR}/thirdparty/bgfx.cmake/bx/include;${BGFX_ROOT}/examples/common/imgui"
     COMPILE_DEFINITIONS
         "BX_CONFIG_DEBUG=$<IF:$<CONFIG:Debug>,1,$<BOOL:${BX_CONFIG_DEBUG}>>"
-    COMPILE_OPTIONS "/Zc:preprocessor"
 )
 
-# bx rewrites __stdcall while its headers are being parsed by clang-cl.  Force the
+# /Zc:preprocessor is an MSVC-frontend option. GNU MinGW uses its conforming preprocessor
+# by default and must not receive slash-style compiler options.
+if(MSVC OR
+   (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND
+    CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC"))
+    set_property(SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/bgfxbackend.cpp" APPEND PROPERTY
+        COMPILE_OPTIONS "/Zc:preprocessor"
+    )
+endif()
+
+# bx rewrites __stdcall while its headers are being parsed by clang-cl. Force the
 # compatibility header into the renderer translation unit as well as bx/bgfx so the
 # MSVC standard-library headers that follow still see the Win32 calling convention.
 if(OPENTS_EXPERIMENTAL_CLANG_CL AND CMAKE_SIZEOF_VOID_P EQUAL 4)
@@ -283,4 +310,8 @@ set_property(GLOBAL PROPERTY VS_STARTUP_PROJECT OpenTS)
 set(NATVIS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/sun.natvis")
 source_group("Natvis Files" FILES ${NATVIS_FILE})
 target_sources(OpenTS PRIVATE ${NATVIS_FILE})
-target_link_options(OpenTS PRIVATE "/NATVIS:${NATVIS_FILE}")
+if(MSVC OR
+   (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND
+    CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC"))
+    target_link_options(OpenTS PRIVATE "/NATVIS:${NATVIS_FILE}")
+endif()
