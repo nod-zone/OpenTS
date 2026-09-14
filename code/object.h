@@ -175,7 +175,7 @@ class ObjectClass : public AbstractClass
 
 		/*
 		 * If this object is still a live part of the game, then this flag will be true. It
-		 * is cleared the moment it is queued for deletion, which is what lets the
+		 * is cleared the moment the object is queued for deletion, which is what lets the
 		 * object lists be walked safely while objects on them are being destroyed.
 		 */
 		bool IsActive;
@@ -327,7 +327,7 @@ class ObjectClass : public AbstractClass
 		virtual int Weapon_Range(int =0) const;
 		virtual ResultType Take_Damage(int & damage, int distance, WarheadTypeClass const * warhead, TechnoClass * source=0, bool forced=false, bool=false);
 		virtual void Scatter(Coord const &, bool forced=false, bool nokidding=false);
-		virtual bool Catch_Fire(void) const;
+		virtual bool Catch_Fire(void);
 		virtual void Fire_Out(void);
 		virtual int Value(void) const;
 		virtual MissionType Get_Mission(void) const;
