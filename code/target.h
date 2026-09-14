@@ -38,20 +38,20 @@
 #include "rtti.hh"
 
 
-inline bool Is_Target_Team(const AbstractClass * target) {return(target != NULL && target->RTTI == RTTI_TEAM);}
-inline bool Is_Target_TeamType(const AbstractClass * target) {return(target != NULL && target->RTTI == RTTI_TEAMTYPE);}
-inline bool Is_Target_Trigger(const AbstractClass * target) {return(target != NULL && target->RTTI == RTTI_TRIGGER);}
-inline bool Is_Target_TriggerType(const AbstractClass * target) {return(target != NULL && target->RTTI == RTTI_TRIGGERTYPE);}
-inline bool Is_Target_Infantry(const AbstractClass * target) {return(target != NULL && target->RTTI == RTTI_INFANTRY);}
-inline bool Is_Target_Bullet(const AbstractClass * target) {return(target != NULL && target->RTTI == RTTI_BULLET);}
-inline bool Is_Target_Terrain(const AbstractClass * target) {return(target != NULL && target->RTTI == RTTI_TERRAIN);}
-inline bool Is_Target_Cell(const AbstractClass * target) {return(target != NULL && target->RTTI ==  RTTI_CELL);}
-inline bool Is_Target_Unit(const AbstractClass * target) {return(target != NULL && target->RTTI == RTTI_UNIT);}
-inline bool Is_Target_Building(const AbstractClass * target) {return(target != NULL && target->RTTI == RTTI_BUILDING);}
-inline bool Is_Target_IsoTile(const AbstractClass * target) {return(target != NULL && target->RTTI == RTTI_ISOTILE);}
-inline bool Is_Target_Aircraft(const AbstractClass * target) {return(target != NULL && target->RTTI == RTTI_AIRCRAFT);}
-inline bool Is_Target_Animation(const AbstractClass * target) {return(target != NULL && target->RTTI == RTTI_ANIM);}
-inline bool Is_Target_Tag(const AbstractClass * target) {return(target != NULL && target->RTTI == RTTI_TAG);}
+inline bool Is_Target_Team(const AbstractClass * target) {return(target != NULL && target->Fetch_RTTI() == RTTI_TEAM);}
+inline bool Is_Target_TeamType(const AbstractClass * target) {return(target != NULL && target->Fetch_RTTI() == RTTI_TEAMTYPE);}
+inline bool Is_Target_Trigger(const AbstractClass * target) {return(target != NULL && target->Fetch_RTTI() == RTTI_TRIGGER);}
+inline bool Is_Target_TriggerType(const AbstractClass * target) {return(target != NULL && target->Fetch_RTTI() == RTTI_TRIGGERTYPE);}
+inline bool Is_Target_Infantry(const AbstractClass * target) {return(target != NULL && target->Fetch_RTTI() == RTTI_INFANTRY);}
+inline bool Is_Target_Bullet(const AbstractClass * target) {return(target != NULL && target->Fetch_RTTI() == RTTI_BULLET);}
+inline bool Is_Target_Terrain(const AbstractClass * target) {return(target != NULL && target->Fetch_RTTI() == RTTI_TERRAIN);}
+inline bool Is_Target_Cell(const AbstractClass * target) {return(target != NULL && target->Fetch_RTTI() == RTTI_CELL);}
+inline bool Is_Target_Unit(const AbstractClass * target) {return(target != NULL && target->Fetch_RTTI() == RTTI_UNIT);}
+inline bool Is_Target_Building(const AbstractClass * target) {return(target != NULL && target->Fetch_RTTI() == RTTI_BUILDING);}
+inline bool Is_Target_IsoTile(const AbstractClass * target) {return(target != NULL && target->Fetch_RTTI() == RTTI_ISOTILE);}
+inline bool Is_Target_Aircraft(const AbstractClass * target) {return(target != NULL && target->Fetch_RTTI() == RTTI_AIRCRAFT);}
+inline bool Is_Target_Animation(const AbstractClass * target) {return(target != NULL && target->Fetch_RTTI() == RTTI_ANIM);}
+inline bool Is_Target_Tag(const AbstractClass * target) {return(target != NULL && target->Fetch_RTTI() == RTTI_TAG);}
 
 class UnitClass;
 class BuildingClass;
