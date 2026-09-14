@@ -23,6 +23,17 @@ add_subdirectory(bgfx.cmake)
 # These libraries support the disabled texture tools and are not linked into OpenTS.
 set_target_properties(bimg_decode bimg_encode PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
+if(OPENTS_EXPERIMENTAL_MINGW)
+    # bx's SSE backend uses SSE4.1 intrinsics such as _mm_round_ps. GCC/MinGW
+    # requires the matching target option explicitly or rejects their always_inline
+    # implementations with "target specific option mismatch".
+    foreach(target bx bimg bgfx)
+        target_compile_options(${target} PRIVATE
+            "$<$<COMPILE_LANGUAGE:CXX>:-msse4.1>"
+        )
+    endforeach()
+endif()
+
 if(OPENTS_EXPERIMENTAL_CLANG_CL AND CMAKE_SIZEOF_VOID_P EQUAL 4)
     # bx treats Clang with the MSVC CRT like a non-x86 compiler and erases
     # __stdcall. Restore it before Windows declarations are parsed.
