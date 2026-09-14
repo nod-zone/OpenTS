@@ -12,6 +12,7 @@ set(OPENTS_VERSION_PRERELEASE "")
 option(OPENTS_OFFICIAL_BUILD "Build as an official release of the declared version" OFF)
 
 option(OPENTS_EXPERIMENTAL_CLANG_CL "Build with clang-cl using the MSVC ABI" OFF)
+option(OPENTS_EXPERIMENTAL_MINGW "Build with MinGW-w64 (unsupported experiment)" OFF)
 
 # Lets a target's FOLDER place it in a Visual Studio solution folder. The bgfx submodule sets
 # this as well, so declare it here rather than inherit it from a vendored build.
@@ -33,16 +34,36 @@ elseif(MSVC)
         message(FATAL_ERROR
             "OpenTS targets Win32 and x64. Reconfigure with -A Win32 or -A x64.")
     endif()
+elseif(MINGW)
+    if(NOT OPENTS_EXPERIMENTAL_MINGW)
+        message(FATAL_ERROR
+            "The unsupported MinGW-w64 experiment must be configured with "
+            "-DOPENTS_EXPERIMENTAL_MINGW=ON.")
+    endif()
+    message(WARNING
+        "Building OpenTS with MinGW-w64 is experimental and unsupported. "
+        "Use MSVC/Visual Studio 2022 for supported builds.")
+    if(NOT CMAKE_SIZEOF_VOID_P EQUAL 4 AND NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+        message(FATAL_ERROR "OpenTS MinGW experiment supports only 32-bit and 64-bit Windows targets.")
+    endif()
 else()
     message(FATAL_ERROR
         "OpenTS requires the Visual Studio 2022 MSVC toolchain. "
         "For the unsupported clang-cl experiment, configure with "
-        "-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/clang-cl-msvc.cmake.")
+        "-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/clang-cl-msvc.cmake; "
+        "for the unsupported MinGW-w64 experiment, use "
+        "-DOPENTS_EXPERIMENTAL_MINGW=ON.")
 endif()
 
 string(TOLOWER "${CMAKE_CXX_COMPILER_ARCHITECTURE_ID}" OPENTS_ARCH)
 if(NOT OPENTS_ARCH)
-    set(OPENTS_ARCH "unknown")
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        set(OPENTS_ARCH "x64")
+    elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+        set(OPENTS_ARCH "win32")
+    else()
+        set(OPENTS_ARCH "unknown")
+    endif()
 endif()
 
 enable_language(RC)
@@ -78,18 +99,3 @@ set(OPENTS_STAMP_ARGS
     "-DOPENTS_ARCH=${OPENTS_ARCH}"
     -P "${CMAKE_SOURCE_DIR}/cmake/GitStamp.cmake"
 )
-
-execute_process(COMMAND ${CMAKE_COMMAND} ${OPENTS_STAMP_ARGS})
-
-add_custom_target(OpenTSBuildStamp ALL
-    COMMAND ${CMAKE_COMMAND} ${OPENTS_STAMP_ARGS}
-    COMMENT "Stamping the build identity"
-    VERBATIM
-)
-
-add_subdirectory(thirdparty)
-add_subdirectory(code)
-add_subdirectory(code/language)
-
-enable_testing()
-add_subdirectory(tests)
