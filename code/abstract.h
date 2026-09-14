@@ -84,7 +84,9 @@ class AbstractClass : public IPersistent
 		**	associated with it. The ID number happens to match the index into
 		**	the object heap appropriate for this object type.
 		*/
+#if defined(_MSC_VER)
 		__declspec(property(get = Fetch_RTTI)) RTTIType RTTI;
+#endif
 		int ID;
 
 		/*
