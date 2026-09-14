@@ -18,7 +18,6 @@ option(OPENTS_EXPERIMENTAL_MINGW "Build with MinGW-w64 (unsupported experiment)"
 # this as well, so declare it here rather than inherit it from a vendored build.
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang"
    AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
     if(NOT OPENTS_EXPERIMENTAL_CLANG_CL)
@@ -99,3 +98,18 @@ set(OPENTS_STAMP_ARGS
     "-DOPENTS_ARCH=${OPENTS_ARCH}"
     -P "${CMAKE_SOURCE_DIR}/cmake/GitStamp.cmake"
 )
+
+execute_process(COMMAND ${CMAKE_COMMAND} ${OPENTS_STAMP_ARGS})
+
+add_custom_target(OpenTSBuildStamp ALL
+    COMMAND ${CMAKE_COMMAND} ${OPENTS_STAMP_ARGS}
+    COMMENT "Stamping the build identity"
+    VERBATIM
+)
+
+add_subdirectory(thirdparty)
+add_subdirectory(code)
+add_subdirectory(code/language)
+
+enable_testing()
+add_subdirectory(tests)
