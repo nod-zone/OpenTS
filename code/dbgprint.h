@@ -13,16 +13,21 @@
 
 #pragma once
 
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(__MINGW32__)
 
 #include <sal.h>
 
 #else
 
-// The annotation and the calling convention are the compiler's own. Off Windows
-// they carry no meaning, so they cost nothing to spell.
+// SAL annotations are only needed by the MSVC analysis toolchain. MinGW's sal.h does not
+// provide the same annotation surface, and Clang/GNU calling-convention support does not
+// require them for these declarations.
+#ifndef _Printf_format_string_
 #define _Printf_format_string_
+#endif
+#ifndef __cdecl
 #define __cdecl
+#endif
 
 #endif
 
