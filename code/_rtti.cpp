@@ -147,7 +147,7 @@ template <>
 TechnoClass const * Dynamic_Cast<TechnoClass const *>(AbstractClass const * target)
 {
 	if (target != NULL) {
-		RTTIType rtti = target->RTTI;
+		RTTIType rtti = target->Fetch_RTTI();
 		switch (rtti) {
 			case RTTI_INFANTRY:
 				return((TechnoClass *)target);
@@ -175,7 +175,7 @@ template <>
 TechnoClass * Dynamic_Cast<TechnoClass *>(AbstractClass * target)
 {
 	if (target != NULL) {
-		RTTIType rtti = target->RTTI;
+		RTTIType rtti = target->Fetch_RTTI();
 		switch (rtti) {
 			case RTTI_INFANTRY:
 				return((TechnoClass *)target);
