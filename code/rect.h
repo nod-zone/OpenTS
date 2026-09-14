@@ -79,7 +79,9 @@ class TRect
 		**	Determine is rectangle is valid.
 		*/
 		[[nodiscard]] constexpr bool Is_Valid(void) const {return(Width > 0 && Height > 0);}
+#if defined(_MSC_VER)
 		__declspec(property(get=Is_Valid)) bool IsValid;
+#endif
 
 		/*
 		**	Returns size of rectangle if each discrete location within it is presumed
@@ -91,16 +93,24 @@ class TRect
 		**	Fetch points of rectangle (used as a convenience for the programmer).
 		*/
 		[[nodiscard]] constexpr TPoint2D<T> Top_Left(void) const {return(TPoint2D<T>(X, Y));}
+#if defined(_MSC_VER)
 		__declspec(property(get=Top_Left)) TPoint2D<T> TopLeft;
+#endif
 
 		[[nodiscard]] constexpr TPoint2D<T> Top_Right(void) const {return(TPoint2D<T>(T(X + Width - 1), Y));}
+#if defined(_MSC_VER)
 		__declspec(property(get=Top_Right)) TPoint2D<T> TopRight;
+#endif
 
 		[[nodiscard]] constexpr TPoint2D<T> Bottom_Left(void) const {return(TPoint2D<T>(X, T(Y + Height - 1)));}
+#if defined(_MSC_VER)
 		__declspec(property(get=Bottom_Left)) TPoint2D<T> BottomLeft;
+#endif
 
 		[[nodiscard]] constexpr TPoint2D<T> Bottom_Right(void) const {return(TPoint2D<T>(T(X + Width - 1), T(Y + Height - 1)));}
+#if defined(_MSC_VER)
 		__declspec(property(get=Bottom_Right)) TPoint2D<T> BottomRight;
+#endif
 
 
 		/*
