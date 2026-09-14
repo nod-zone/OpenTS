@@ -175,7 +175,7 @@ class ObjectClass : public AbstractClass
 
 		/*
 		 * If this object is still a live part of the game, then this flag will be true. It
-		 * is cleared the moment the object is queued for deletion, which is what lets the
+		 * is cleared the moment it is queued for deletion, which is what lets the
 		 * object lists be walked safely while objects on them are being destroyed.
 		 */
 		bool IsActive;
@@ -224,7 +224,9 @@ class ObjectClass : public AbstractClass
 		virtual bool Not_Underground(void) const;
 		virtual bool Considered_Vehicle(void) const {return(false);}
 		virtual TechnoTypeClass const * Techno_Type_Class(void) const;
+#if defined(_MSC_VER)
 		__declspec( property( get=Techno_Type_Class) ) TechnoTypeClass const * TClass;
+#endif
 		virtual ObjectTypeClass const * Class_Of(void) const {return(0);}
 		bool Is_Infantry(void) const {return(Fetch_RTTI() == RTTI_INFANTRY);}
 		bool Is_Foot(void) const;
@@ -288,7 +290,9 @@ class ObjectClass : public AbstractClass
 		double Get_Health_Ratio(void) const;
 		void Set_Health_Ratio(double health);
 
+#if defined(_MSC_VER)
 		__declspec( property( get=Get_Health_Ratio, put=Set_Health_Ratio ) ) double HealthRatio;
+#endif
 
 		virtual void Draw_Pre_Render(Point2D const & point, Rect const & cliprect) const { }
 		virtual void Draw_Post_Render(Point2D const & point, Rect const & cliprect) const { }
@@ -323,13 +327,15 @@ class ObjectClass : public AbstractClass
 		virtual int Weapon_Range(int =0) const;
 		virtual ResultType Take_Damage(int & damage, int distance, WarheadTypeClass const * warhead, TechnoClass * source=0, bool forced=false, bool=false);
 		virtual void Scatter(Coord const &, bool forced=false, bool nokidding=false);
-		virtual bool Catch_Fire(void);
+		virtual bool Catch_Fire(void) const;
 		virtual void Fire_Out(void);
 		virtual int Value(void) const;
 		virtual MissionType Get_Mission(void) const;
 		virtual void Assign_Mission(MissionType mission) {}
 
+#if defined(_MSC_VER)
 		__declspec( property( get=Get_Mission, put=Assign_Mission ) ) MissionType Mission;
+#endif
 
 		/*
 		**	AI.
@@ -350,11 +356,15 @@ class ObjectClass : public AbstractClass
 		virtual Coord Get_Coord(void) const {return(Position);}
 		virtual void Set_Coord(Coord const & coord);
 
+#if defined(_MSC_VER)
 		__declspec( property( get=Get_Coord, put=Set_Coord ) ) Coord PositionCoord;
+#endif
 
 		virtual Cell Get_Cell(void) const {return(Position.As_Cell());}
 
+#if defined(_MSC_VER)
 		__declspec( property( get=Get_Cell /*put=*/ ) ) Cell PositionCell;
+#endif
 
 		virtual CellClass * Get_Cell_Ptr(void) const;
 		virtual Cell Get_Target_Cell(void) const;
@@ -365,12 +375,16 @@ class ObjectClass : public AbstractClass
 		virtual int Get_Height_AGL(void) const;
 		virtual void Set_Height_AGL(int);
 
+#if defined(_MSC_VER)
 		__declspec( property( get=Get_Height_AGL, put=Set_Height_AGL ) ) int HeightAGL;
+#endif
 
 		virtual int Get_Height(void) const;
 		void Set_Height(int height);
 
+#if defined(_MSC_VER)
 		__declspec( property( get=Get_Height, put=Set_Height ) ) int Height;
+#endif
 
 		void Spring_Tag(TEventType event=TEVENT_ANY, ObjectClass * object=NULL, Cell const & cell=CELL_NONE, bool forced=false, TechnoClass *source=NULL)
 		{
